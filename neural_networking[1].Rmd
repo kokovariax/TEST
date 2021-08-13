@@ -1,0 +1,105 @@
+---
+title: "NEURAL NETWORK"
+author: "nENECHI UGONABO"
+date: "11 December 2020"
+output: html_document
+---
+
+```{r include=TRUE}
+suppressPackageStartupMessages(library(neuralnet))#neuralnetwok
+suppressPackageStartupMessages(library(caTools))#FOR CUTING AND RANDOMIZATION
+suppressPackageStartupMessages(library(tidyverse))#for cleaning
+suppressPackageStartupMessages(library(nnet))#for cleaning
+```
+##For 5A
+
+```{r include=TRUE}
+heart <- read.table("~/heart.dat")
+heart <- heart %>% 
+  rename(
+    age= V1, 
+      sex = V2, 
+      painType = V3, 
+      rBP = V4, 
+      serChol = V5,
+      bS = V6, 
+      rECR = V7, 
+      maxHR = V8, 
+      exercIA = V9,
+      oldPeak = V10,
+      slopePE =V11,
+      majorV = V12,
+      thal = V13,
+      status = V14)
+colnames(heart)
+#data has been loaded in and column names have been set to read
+heart1 = heart#to save a piece of the dataset as a backup for further evaluations
+#let us tailor the output to give a binary
+heart[,14] <- (heart[,14]-min(heart[,14]))/(max(heart[,14])-min(heart[,14]))
+str(heart[,14])
+```
+
+```{r include=TRUE}
+set.seed(775)
+split = sample.split(heart$status, SplitRatio = 0.8)
+train = subset(heart, split==TRUE)
+test = subset(heart, split==FALSE)
+```
+
+```{r include=TRUE}
+set.seed(775)
+heart_nn <- neuralnet(status~age+sex+painType+rBP+serChol+bS+rECR+maxHR+exercIA+oldPeak+slopePE+majorV+thal,data = train,hidden = c(5),err.fct = "ce", linear.output = FALSE)
+plot(heart_nn)
+
+```
+
+THE QUESTION 5C
+```{r include=TRUE}
+pred1 <- predict(heart_nn, newdata = test)
+pred1 <- round(pred1,0)
+actual <- test[,14]
+conf_matrix <- table(actual, pred1)#confusion matrix for the unstandarsised variables
+conf_matrix
+
+#the accuracy of the model is coded lik
+
+accuracy <- sum(diag(conf_matrix))/sum(conf_matrix)*100
+accuracy
+``` 
+
+
+FOR PART C
+```{r include=TRUE}
+#since we plan using the variables we used initially as our work p
+heart1 = heart
+for(i in 1:14){
+  heart[,i] <- (heart[,i]-min(heart[,i]))/(max(heart[,i])-min(heart[,i]))
+}
+
+#let us divide the dataset into two :80%training and 20%test
+set.seed(775)
+split = sample.split(heart$status, SplitRatio = 0.8)
+train = subset(heart, split==TRUE)
+test = subset(heart, split==FALSE)
+```
+
+```{r include=TRUE}
+set.seed(775)
+heart_nn <- neuralnet(status~age+sex+painType+rBP+serChol+bS+rECR+maxHR+exercIA+oldPeak+slopePE+majorV+thal,data = train,hidden = c(10,5,3,2), linear.output = FALSE)
+plot(heart_nn)
+
+```
+```{r include=TRUE}
+#writing a test algorithm using the prediction instead of compute function with test data as the new data set
+output <- predict(heart_nn, newdata = test)
+prediction<- round(output*(max(test[,14])-min(test[,14]))+min(test[,14]),0)
+actual <- test[,14]
+#building a confusion matrix of the above model with variables 
+conf_matrix2 <- table(actual,prediction)
+conf_matrix2
+
+accuracy2 <- sum(diag(conf_matrix2))/sum(conf_matrix2)*100
+accuracy2
+``` 
+##from the accuracy of the first model and the second model, you will see that the accuracy of the second is higher than the first because of some alterations in the data alignment. when dataset has been standardised, it makes it very easier to work with using neural networking
+
