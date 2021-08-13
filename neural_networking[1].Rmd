@@ -1,6 +1,6 @@
 ---
 title: "NEURAL NETWORK"
-author: "nENECHI UGONABO"
+author: "UKACHUKWU CHRISTIAN CHINWEIKE"
 date: "11 December 2020"
 output: html_document
 ---
